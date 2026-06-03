@@ -5,8 +5,8 @@
 
 namespace sudoku {
 
-typedef std::pair<int, int> Coord;
-int GRID_LEN = 9;
+using Coord = std::pair<int,int>;
+inline constexpr int GRID_LEN = 9;
 
 } 
 

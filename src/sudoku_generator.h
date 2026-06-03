@@ -1,56 +1,341 @@
 #ifndef SRC_SUDOKU_GENERATOR_H_
 #define SRC_SUDOKU_GENERATOR_H_
 
-#include<chrono>
-#include<random>
-#include<utility>
+#include <algorithm>
+#include <chrono>
+#include <random>
+#include <vector>
 
-#include"../src/grid.h"
-#include"../src/coord_utils.h"
+#include "grid.h"
 
 namespace sudoku {
 
-bool fill_with_valid_solution(
-    Grid *grid,
-    Coord curr_coord = std::make_pair(0, 0)
-) {
-    auto next_coord = get_next_cell_coord(curr_coord);
+enum class Difficulty
+{
+    EASY,
+    MEDIUM,
+    HARD
+};
 
-    auto values = grid->get_possible_values_for_cell_at_coord(curr_coord);
-    if (values.size() == 0) return false;
+inline std::mt19937&
+global_rng()
+{
+    static std::mt19937 rng(
+        std::chrono::steady_clock::now()
+        .time_since_epoch()
+        .count()
+    );
 
-    auto rnd_seed = std::chrono::system_clock::now().time_since_epoch().count();
+    return rng;
+}
+
+/*
+-------------------------------------
+Generate Full Valid Solution
+-------------------------------------
+*/
+
+inline bool fill_complete_board(
+    Grid& grid
+)
+{
+    Coord best_cell;
+    bool found = false;
+
+    int best_size = 100;
+
+    for(int row=0;
+        row<GRID_LEN;
+        row++)
+    {
+        for(int col=0;
+            col<GRID_LEN;
+            col++)
+        {
+            Coord current{
+                row,col
+            };
+
+            if(!grid.is_empty(current))
+                continue;
+
+            auto candidates =
+                grid.get_possible_values(
+                    current
+                );
+
+            if(candidates.empty())
+                return false;
+
+            if(
+                static_cast<int>(
+                    candidates.size()
+                ) < best_size
+            )
+            {
+                best_size =
+                    candidates.size();
+
+                best_cell =
+                    current;
+
+                found = true;
+            }
+        }
+    }
+
+    if(!found)
+        return true;
+
+    auto candidates =
+        grid.get_possible_values(
+            best_cell
+        );
+
     std::shuffle(
-        values.begin(),
-        values.end(),
-        std::default_random_engine(rnd_seed));
+        candidates.begin(),
+        candidates.end(),
+        global_rng()
+    );
 
-    for (auto value : values) {
-        grid->update(curr_coord, value);
-        if (curr_coord == std::make_pair(8, 8)) return true;  // Done
+    for(int value :
+        candidates)
+    {
+        grid.update(
+            best_cell,
+            value
+        );
 
-        bool next_cell_is_filled = fill_with_valid_solution(grid, next_coord);
-        if (next_cell_is_filled) return true;
+        if(
+            fill_complete_board(
+                grid
+            )
+        )
+        {
+            return true;
+        }
 
-      
-        grid->clear_values_starting_from_coord(curr_coord);
+        grid.update(
+            best_cell,
+            0
+        );
     }
 
     return false;
 }
 
-void remove_values_from_solution(Grid *grid, int values_to_remove) {
-    auto random_cell_coords = get_N_random_cell_coords(values_to_remove);
-    for (auto coord : random_cell_coords) grid->update(coord, 0);
+/*
+-------------------------------------
+Count Solutions
+-------------------------------------
+*/
+
+inline void count_solutions(
+    Grid& grid,
+    int& solutions,
+    int limit = 2
+)
+{
+    if(solutions >= limit)
+        return;
+
+    Coord best_cell;
+    bool found = false;
+
+    int best_size = 100;
+
+    for(int row=0;
+        row<GRID_LEN;
+        row++)
+    {
+        for(int col=0;
+            col<GRID_LEN;
+            col++)
+        {
+            Coord current{
+                row,col
+            };
+
+            if(!grid.is_empty(current))
+                continue;
+
+            auto candidates =
+                grid.get_possible_values(
+                    current
+                );
+
+            if(candidates.empty())
+                return;
+
+            if(
+                static_cast<int>(
+                    candidates.size()
+                ) < best_size
+            )
+            {
+                best_size =
+                    candidates.size();
+
+                best_cell =
+                    current;
+
+                found = true;
+            }
+        }
+    }
+
+    if(!found)
+    {
+        solutions++;
+        return;
+    }
+
+    auto candidates =
+        grid.get_possible_values(
+            best_cell
+        );
+
+    for(int value :
+        candidates)
+    {
+        grid.update(
+            best_cell,
+            value
+        );
+
+        count_solutions(
+            grid,
+            solutions,
+            limit
+        );
+
+        grid.update(
+            best_cell,
+            0
+        );
+    }
 }
 
-Grid generate_puzzle() {
-    Grid grid;
-    fill_with_valid_solution(&grid);
-    remove_values_from_solution(&grid, 30);
-    return grid;
+inline bool has_unique_solution(
+    Grid puzzle
+)
+{
+    int solutions = 0;
+
+    count_solutions(
+        puzzle,
+        solutions,
+        2
+    );
+
+    return solutions == 1;
 }
 
-} 
+/*
+-------------------------------------
+Difficulty
+-------------------------------------
+*/
 
-#endif 
+inline int cells_to_remove(
+    Difficulty difficulty
+)
+{
+    switch(difficulty)
+    {
+        case Difficulty::EASY:
+            return 35;
+
+        case Difficulty::MEDIUM:
+            return 45;
+
+        case Difficulty::HARD:
+            return 55;
+    }
+
+    return 45;
+}
+
+/*
+-------------------------------------
+Generate Puzzle
+-------------------------------------
+*/
+
+inline Grid generate_puzzle(
+    Difficulty difficulty =
+        Difficulty::MEDIUM
+)
+{
+    Grid puzzle;
+
+    fill_complete_board(
+        puzzle
+    );
+
+    int remove_count =
+        cells_to_remove(
+            difficulty
+        );
+
+    std::vector<Coord> cells;
+
+    for(int r=0;
+        r<GRID_LEN;
+        r++)
+    {
+        for(int c=0;
+            c<GRID_LEN;
+            c++)
+        {
+            cells.push_back(
+                {r,c}
+            );
+        }
+    }
+
+    std::shuffle(
+        cells.begin(),
+        cells.end(),
+        global_rng()
+    );
+
+    int removed = 0;
+
+    for(const auto& cell :
+        cells)
+    {
+        if(removed >= remove_count)
+            break;
+
+        int old_value =
+            puzzle.get(cell);
+
+        puzzle.update(
+            cell,
+            0
+        );
+
+        if(
+            !has_unique_solution(
+                puzzle
+            )
+        )
+        {
+            puzzle.update(
+                cell,
+                old_value
+            );
+        }
+        else
+        {
+            removed++;
+        }
+    }
+
+    return puzzle;
+}
+
+}
+
+#endif

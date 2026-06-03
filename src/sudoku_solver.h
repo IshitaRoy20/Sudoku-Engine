@@ -1,49 +1,129 @@
-
 #ifndef SRC_SUDOKU_SOLVER_H_
 #define SRC_SUDOKU_SOLVER_H_
 
-#include<utility>
+#include <limits>
 
-#include"../src/grid.h"
-#include"../src/coord_utils.h"
+#include "grid.h"
 
 namespace sudoku {
 
-bool _solve(
-    Grid *grid,
-    Coord cell_coord = std::make_pair(0, 0)
-) {
-    auto next_coord = get_next_cell_coord(cell_coord);
+inline bool solve_recursive(
+    Grid& grid
+)
+{
+    Coord best_cell;
+    bool found = false;
 
-    if (grid->coord_was_pre_filled(cell_coord)) {
-        if (cell_coord == std::make_pair(8, 8)) return true;
-        return _solve(grid, next_coord);
+    int best_candidates =
+        std::numeric_limits<int>
+        ::max();
+
+    for(int row=0;
+        row<GRID_LEN;
+        row++)
+    {
+        for(int col=0;
+            col<GRID_LEN;
+            col++)
+        {
+            Coord current{
+                row,col
+            };
+
+            if(
+                !grid.is_empty(
+                    current
+                )
+            )
+            {
+                continue;
+            }
+
+            auto candidates =
+                grid
+                .get_possible_values(
+                    current
+                );
+
+            if(
+                candidates.empty()
+            )
+            {
+                return false;
+            }
+
+            if(
+                static_cast<int>(
+                    candidates.size()
+                )
+                <
+                best_candidates
+            )
+            {
+                best_candidates =
+                    candidates
+                    .size();
+
+                best_cell =
+                    current;
+
+                found = true;
+            }
+        }
     }
 
-    auto values = grid->get_possible_values_for_cell_at_coord(cell_coord);
-    if (values.size() == 0) return false;
+    if(!found)
+        return true;
 
-    for (auto value : values) {
-        grid->update(cell_coord, value);
-        if (cell_coord == std::make_pair(8, 8)) return true;  
+    auto candidates =
+        grid
+        .get_possible_values(
+            best_cell
+        );
 
-        bool next_cell_is_solved = _solve(grid, next_coord);
-        if (next_cell_is_solved) return true;
+    for(int value :
+        candidates)
+    {
+        grid.update(
+            best_cell,
+            value
+        );
 
+        if(
+            solve_recursive(
+                grid
+            )
+        )
+        {
+            return true;
+        }
 
-        grid->clear_values_starting_from_coord(cell_coord);
+        grid.update(
+            best_cell,
+            0
+        );
     }
-
-    if (cell_coord == std::make_pair(0, 0)) throw std::logic_error(
-        "This puzzle doesn't have a solution!");
 
     return false;
 }
 
-void solve(Grid *grid) {
-    
-    _solve(grid);
+inline void solve(
+    Grid& grid
+)
+{
+    if(
+        !solve_recursive(
+            grid
+        )
+    )
+    {
+        throw
+        std::logic_error(
+            "Puzzle has no solution."
+        );
+    }
 }
 
 }
-#endif  
+
+#endif
