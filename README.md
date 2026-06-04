@@ -1,110 +1,288 @@
-🧩 Sudoku Solver (C++)
+# Sudoku Solver & Generator
 
-A C++ based Sudoku Solver and Generator that can automatically generate valid Sudoku puzzles and solve them using backtracking algorithms. The project demonstrates efficient problem-solving, recursion, and clean modular design in C++.
+A modular C++17 application for generating, solving, and validating Sudoku puzzles. The project implements recursive backtracking, puzzle generation with unique-solution verification, an interactive hint system, and automated testing.
 
-🚀 Features
+## Overview
 
-✔️ Generates valid 9×9 Sudoku puzzles
+This project provides a complete Sudoku engine capable of:
 
-✔️ Solves Sudoku puzzles using Backtracking
+* Generating valid Sudoku puzzles
+* Solving Sudoku puzzles using recursive backtracking
+* Supporting multiple difficulty levels
+* Providing interactive hints
+* Validating user-submitted solutions
+* Ensuring puzzle correctness through automated tests
 
-✔️ Ensures all Sudoku constraints (row, column, subgrid)
+The codebase is organized into reusable modules with a focus on maintainability, extensibility, and clean software design.
 
-✔️ Modular and extensible C++ codebase
+---
 
-✔️ Fast and memory-efficient solution
+## Features
 
-🛠️ Tech Stack
+### Puzzle Generation
 
-Language: C++ (C++17 standard)
+* Generates valid 9×9 Sudoku puzzles
+* Supports Easy, Medium, and Hard difficulty levels
+* Produces puzzles with a unique solution
+* Uses randomized board generation for puzzle variety
 
-Concepts Used:
+### Sudoku Solver
 
-Backtracking
+* Recursive backtracking algorithm
+* Constraint-based candidate validation
+* Detects unsolvable puzzle states
+* Efficient state restoration during backtracking
 
-Recursion
+### Interactive Gameplay
 
-Object-Oriented Programming
+* Hint system with configurable limits
+* User solution submission and verification
+* Optional solution reveal
+* Command-line interface for gameplay
 
-STL (vector, array, set)
+### Validation
 
-Compiler: g++
+* Row validation
+* Column validation
+* 3×3 subgrid validation
+* Verification that original clues remain unchanged
 
-▶️ How to Run
-Compile
-g++ --std=c++17 main.cpp /g++ --std=c++17 sudokugenerator.cpp/ g++ --std=c++17 sudokusolver.cpp
+### Testing
 
-Execute
+* Unit tests covering:
+
+  * Grid operations
+  * Coordinate utilities
+  * Puzzle solving
+  * Puzzle generation
+  * Solution validation
+
+---
+
+## Technology Stack
+
+**Language**
+
+* C++17
+
+**Core Concepts**
+
+* Recursion
+* Backtracking
+* Object-Oriented Programming
+* Constraint Satisfaction
+* Randomized Algorithms
+* Unit Testing
+
+**Standard Library Components**
+
+* `std::array`
+* `std::vector`
+* `std::set`
+* `std::optional`
+* `std::shuffle`
+* `std::mt19937`
+
+---
+
+## Project Structure
+
+```text
+Sudoku-Solver/
+│
+├── src/
+│   ├── coord.h
+│   ├── coord_utils.h
+│   ├── grid.h
+│   ├── sudoku_solver.h
+│   ├── sudoku_generator.h
+│   ├── sudoku_validator.h
+│   └── sudoku_hint.h
+│
+├── tests/
+│   ├── test_grid.h
+│   ├── test_coord_utils.h
+│   ├── test_sudoku_solver.h
+│   ├── test_sudoku_generator.h
+│   ├── test_sudoku_validator.h
+│   └── test_sudoku_suite.cpp
+│
+├── main.cpp
+├── sudokugenerator.cpp
+├── sudokusolver.cpp
+└── README.md
+```
+
+---
+
+## Architecture
+
+### Grid Module
+
+Responsible for:
+
+* Storing puzzle state
+* Updating cell values
+* Validating candidate placements
+* Tracking pre-filled cells
+
+### Solver Module
+
+Implements recursive backtracking:
+
+1. Select an empty cell
+2. Generate valid candidates
+3. Place a candidate
+4. Recurse
+5. Backtrack if necessary
+
+### Generator Module
+
+Creates puzzles by:
+
+1. Generating a complete valid board
+2. Removing cells according to difficulty
+3. Verifying uniqueness of the resulting puzzle
+
+### Validator Module
+
+Ensures:
+
+* Every row contains digits 1–9 exactly once
+* Every column contains digits 1–9 exactly once
+* Every 3×3 subgrid contains digits 1–9 exactly once
+
+### Hint Module
+
+Provides controlled assistance by revealing valid cell values from the solved board while preserving puzzle consistency.
+
+---
+
+## Building the Project
+
+### Compile Generator
+
+```bash
+g++ -std=c++17 sudokugenerator.cpp -o generator
+```
+
+### Run Generator
+
+```bash
+./generator
+```
+
+---
+
+### Compile Solver
+
+```bash
+g++ -std=c++17 sudokusolver.cpp -o solver
+```
+
+### Run Solver
+
+```bash
+./solver
+```
+
+---
+
+### Compile Interactive Solver
+
+```bash
+g++ -std=c++17 main.cpp -o sudoku
+```
+
+### Run
+
+```bash
 ./sudoku
+```
 
-🧠 How It Works
+---
 
-1. main.cpp--
+## Running Tests
 
-      Accepts user input puzzle and solves it using backtracking
-   
-3. SudokuSolver.cpp--
+Compile:
 
-      Generates and solves the sudoku puzzle
+```bash
+g++ -std=c++17 tests/test_sudoku_suite.cpp -o testsuite
+```
 
-      Uses Backtracking to try valid numbers in empty cells.
+Run:
 
-      Recursively explores possibilities and backtracks on conflicts.
+```bash
+./testsuite
+```
 
-📌 Sample Output
+Successful execution indicates all unit tests have passed.
 
-Unsolved Sudoku Puzzle:
+---
 
-0 0 0 0 0 0 6 8 0
+## Algorithmic Complexity
 
-0 0 0 0 7 3 0 0 9
+### Solving
 
-3 0 9 0 0 0 0 4 5
+Worst-case time complexity:
 
-4 9 0 0 0 0 0 0 0
+```text
+O(9^(n²))
+```
 
-8 0 3 0 5 0 9 0 2
+where `n = 9`.
 
-0 0 0 0 0 0 0 3 6
+Practical performance is significantly improved through constraint checking and search-space pruning.
 
-9 6 0 0 0 0 3 0 8
+### Space Complexity
 
-7 0 0 6 8 0 0 0 0
+```text
+O(n²)
+```
 
-0 2 8 0 0 0 0 0 0
+for board storage and recursive call stack usage.
 
+---
 
+## Engineering Challenges
 
-Solved Sudoku:
+Key challenges addressed during development include:
 
-1 4 2 9 3 5 6 7 8
+* Designing reusable Sudoku abstractions
+* Managing recursive state transitions safely
+* Generating randomized yet valid puzzle configurations
+* Preserving unique solutions during puzzle generation
+* Implementing efficient validation logic
+* Building comprehensive test coverage
 
-5 8 7 1 2 6 3 4 9
+---
 
-6 3 9 4 7 8 1 2 5
+## Future Enhancements
 
-2 1 3 5 4 7 8 9 6
+* Graphical User Interface (GUI)
+* Web-based deployment
+* Puzzle save/load support
+* Timer and scoring system
+* Advanced solving strategies
+* Difficulty estimation based on solving techniques
+* Additional Sudoku variants
+* Performance benchmarking and analytics
 
-4 5 6 2 8 9 7 3 1
+---
 
-7 9 8 3 6 1 2 5 4
+## Learning Outcomes
 
-3 2 1 6 5 4 9 8 7
+This project strengthened practical experience in:
 
-8 6 4 7 9 2 5 1 3
+* Recursive algorithm design
+* Backtracking optimization
+* Software modularization
+* Test-driven development
+* Data structure selection
+* Constraint satisfaction problems
 
-9 7 5 8 1 3 4 6 2
+---
 
+## Author
 
-⏱️ Performance optimization for larger grids
-
-🤝 Contributing
-
-Contributions are welcome!
-Feel free to fork this repository and submit a pull request.
-
-
-
-
-
-
+Developed as a systems-oriented C++ project to explore algorithm design, puzzle generation, and software engineering best practices.
