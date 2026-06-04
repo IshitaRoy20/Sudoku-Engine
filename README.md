@@ -1,4 +1,4 @@
-# Sudoku Solver & Generator
+# Sudoku Solver & Generator with Hint and User Input System
 
 A modular C++17 application for generating, solving, and validating Sudoku puzzles. The project implements recursive backtracking, puzzle generation with unique-solution verification, an interactive hint system, and automated testing.
 
