@@ -1,11 +1,19 @@
 #ifndef SRC_SUDOKU_HINT_H_
 #define SRC_SUDOKU_HINT_H_
 
+#include <optional>
+
 #include "grid.h"
 
 namespace sudoku {
 
-inline bool give_hint(
+struct Hint
+{
+    Coord cell;
+    int value;
+};
+
+inline std::optional<Hint> give_hint(
     Grid& puzzle,
     const Grid& solution
 )
@@ -16,21 +24,25 @@ inline bool give_hint(
         {
             Coord cell{r,c};
 
-            if(
-                puzzle.get(cell) == 0
-            )
+            if(puzzle.get(cell) == 0)
             {
+                int value =
+                    solution.get(cell);
+
                 puzzle.update(
                     cell,
-                    solution.get(cell)
+                    value
                 );
 
-                return true;
+                return Hint{
+                    cell,
+                    value
+                };
             }
         }
     }
 
-    return false;
+    return std::nullopt;
 }
 
 }
