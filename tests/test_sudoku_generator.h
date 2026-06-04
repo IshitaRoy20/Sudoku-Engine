@@ -1,22 +1,46 @@
 #ifndef TESTS_TEST_SUDOKU_GENERATOR_H_
 #define TESTS_TEST_SUDOKU_GENERATOR_H_
 
-#include"../src/sudoku_generator.h"
+#include <cassert>
 
-void test_puzzle_generated_is_solvable() {
+#include "../src/sudoku_generator.h"
 
-    auto generated_puzzle = sudoku::generate_puzzle();
-    solve(&generated_puzzle);
+inline void test_generated_puzzles_have_unique_solution()
+{
+    for(int i=0;i<20;i++)
+    {
+        auto puzzle =
+            sudoku::generate_puzzle();
 
-    assert(is_valid_solution(generated_puzzle) == true);
+        assert(
+            sudoku::has_unique_solution(
+                puzzle
+            )
+        );
+    }
 }
 
-void test_no_two_successive_puzzles_generated_are_same() {
-   
-    auto first_generated_puzzle = sudoku::generate_puzzle();
-    auto second_generated_puzzle = sudoku::generate_puzzle();
+inline void test_generated_puzzles_are_not_identical()
+{
+    auto first =
+        sudoku::generate_puzzle();
 
-    assert((first_generated_puzzle == second_generated_puzzle) == false);
+    bool found_different =
+        false;
+
+    for(int i=0;i<10;i++)
+    {
+        auto next =
+            sudoku::generate_puzzle();
+
+        if(!(first == next))
+        {
+            found_different = true;
+            break;
+        }
+    }
+
+    assert(found_different);
 }
 
 #endif

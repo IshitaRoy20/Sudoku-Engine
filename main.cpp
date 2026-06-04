@@ -1,49 +1,42 @@
+#include <array>
 #include <iostream>
+
 #include "src/grid.h"
 #include "src/sudoku_solver.h"
-
-using namespace std;
 
 int main()
 {
     try
     {
-        sudoku::Grid grid;
+        std::array<std::array<int, 9>, 9> board{};
 
-        cout << "Enter your Sudoku puzzle row by row (use 0 for empty cells):\n";
+        std::cout
+            << "Enter Sudoku puzzle (9 rows, use 0 for empty cells):\n";
 
-        for (int row = 0; row < 9; ++row)
+        for (int row = 0; row < 9; row++)
         {
-
-            for (int col = 0; col < 9; ++col)
+            for (int col = 0; col < 9; col++)
             {
-                int value;
-                cin >> value;
-                if (value < 0 || value > 9)
-                    throw invalid_argument("Numbers must be between 0 and 9.");
-                grid.update({row, col}, value);
+                std::cin >> board[row][col];
             }
         }
 
-        cout << "\nUnsolved Sudoku Puzzle:\n";
-        cout << grid << endl;
+        sudoku::Grid puzzle(board);
 
-        sudoku::solve(&grid);
+        std::cout << "\nInput Puzzle:\n\n";
+        std::cout << puzzle << '\n';
 
-        cout << "Solved Sudoku Puzzle:\n";
-        cout << grid << endl;
+        sudoku::solve(puzzle);
+
+        std::cout << "Solved Puzzle:\n\n";
+        std::cout << puzzle << '\n';
     }
-    catch (const invalid_argument &e)
+    catch (const std::exception& ex)
     {
-        cerr << "Invalid input: " << e.what() << endl;
-    }
-    catch (const logic_error &e)
-    {
-        cerr << "Sudoku cannot be solved: " << e.what() << endl;
-    }
-    catch (...)
-    {
-        cerr << "An unexpected error occurred." << endl;
+        std::cerr
+            << "Error: "
+            << ex.what()
+            << '\n';
     }
 
     return 0;

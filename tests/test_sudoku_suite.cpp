@@ -1,34 +1,36 @@
+#include <iostream>
 
-#include"../tests/test_grid.h"
-#include"../tests/test_coord_utils.h"
-#include"../tests/test_sudoku_solver.h"
-#include"../tests/test_sudoku_validator.h"
-#include"../tests/test_sudoku_generator.h"
+#include "test_coord_utils.h"
+#include "test_grid.h"
+#include "test_sudoku_solver.h"
+#include "test_sudoku_validator.h"
+#include "test_sudoku_generator.h"
+#include "test_performance.h"
 
-int main() {
-    auto tests = std::vector<void(*)()>{
-        test_puzzle_initial_state_is_set_correctly,
-        test_puzzle_initial_state_is_set_correctly_from_file,
-        test_puzzle_initial_state_isnt_set_due_to_incorrect_values,
-        test_exception_is_thrown_if_file_doesnt_exist,
-        test_value_exists_in_column,
-        test_value_exists_in_row,
-        test_value_exists_in_3x3_grid,
-        test_possible_cell_values_generated_correctly,
-        test_successive_cell_coords_are_generated_correctly,
-        test_puzzle_is_solved_correctly,
-        test_validator_validates_grids_as_expected,
-        test_puzzle_generated_is_solvable,
-        test_no_two_successive_puzzles_generated_are_same
-    };
+int main()
+{
+    test_successive_cell_coords_are_generated_correctly();
+    std::cout << "[PASS] Coord Utils\n";
 
-    std::for_each(
-        tests.begin(),
-        tests.end(),
-        [] (auto test) -> void {
-            test();
-            std::cout << "Test executed successfully." << std::endl;
-        });
+    test_grid_initialization();
+    test_grid_update_and_get();
+    test_possible_values_are_valid();
+    std::cout << "[PASS] Grid\n";
+
+    test_generated_puzzles_can_be_solved();
+    std::cout << "[PASS] Solver\n";
+
+    test_validator_accepts_valid_solutions();
+    std::cout << "[PASS] Validator\n";
+
+    test_generated_puzzles_have_unique_solution();
+    test_generated_puzzles_are_not_identical();
+    std::cout << "[PASS] Generator\n";
+
+    benchmark_solver();
+
+    std::cout
+        << "\nAll tests passed.\n";
 
     return 0;
 }
