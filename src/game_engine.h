@@ -108,29 +108,111 @@ private:
     //  MODE 2: user types 81 numbers, engine solves
     void solve_mode() {
         reset_state();
-        std::cout << "\nEnter the puzzle row by row (9 numbers per row, 0 = empty).\n"
-                  << "Example row: 5 3 0 0 7 0 0 0 0\n\n";
+ 
+        std::cout
+            << "\n" << ansi::CYAN << ansi::BOLD
+            << "  ┌─── Enter Your Puzzle ──────────────────────────────┐\n"
+            << "  │  Type or paste numbers — spaces and newlines are   │\n"
+            << "  │  all treated the same. Use 0 for empty cells.      │\n"
+            << "  │                                                    │\n"
+            << "  │  You can enter one number at a time, one row at a  │\n"
+            << "  │  time, or paste all 81 numbers at once.            │\n"
+            << "  └────────────────────────────────────────────────────┘\n"
+            << ansi::RESET << "\n";
+ 
+        std::array<std::array<int, 9>, 9> board{};
+        int collected = 0;  
+        std::cout << "  Row 1/9 (or paste all 9 rows now) : ";
+        std::cout.flush();
+ 
+        while (collected < 81) {
+            std::string token;
+ 
+            if (!(std::cin >> token)) {
+                std::cout << ansi::RED
+                          << "\n  Input stream closed. Returning to menu.\n"
+                          << ansi::RESET;
+                // drain stream errors before returning
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                return;
+            }
+ 
+            bool pure_digits = !token.empty();
+            for (char ch : token)
+                if (!std::isdigit(static_cast<unsigned char>(ch)))
+                    { pure_digits = false; break; }
+ 
+            if (!pure_digits) {
+                int row_of_error = collected / 9 + 1;
+                std::cout << ansi::RED
+                          << "\n  ✗ \"" << token << "\" is not a number. "
+                          << "Restarting from row " << row_of_error << ".\n"
+                          << ansi::RESET;
+                // Reset to start of current row
+                collected = (collected / 9) * 9;
+                std::cout << "  Row " << row_of_error << "/9 : ";
+                std::cout.flush();
+                continue;
+            }
+ 
+            int v = std::stoi(token);
 
-        std::array<std::array<int,9>,9> board{};
-        for (int r = 0; r <9; ++r) {
-            for (int c = 0; c <9; ++c) {
-                int v = read_int(0, 9);
-                board[r][c] = v;
+            if (v < 0 || v > 9) {
+                int row_of_error = collected / 9 + 1;
+                std::cout << ansi::RED
+                          << "\n  ✗ " << v << " is out of range (0-9). "
+                          << "Restarting from row " << row_of_error << ".\n"
+                          << ansi::RESET;
+                collected = (collected / 9) * 9;
+                std::cout << "  Row " << row_of_error << "/9 : ";
+                std::cout.flush();
+                continue;
+            }
+
+            int r = collected / 9;
+            int c = collected % 9;
+            board[r][c] = v;
+            ++collected;
+ 
+            if (collected % 9 == 0) {
+                int row = collected / 9;   // 1-indexed row just completed
+                std::cout << ansi::DIM
+                          << "  ✓ Row " << row << ":";
+                for (int col = 0; col < 9; ++col)
+                    std::cout << "  " << board[row - 1][col];
+                std::cout << ansi::RESET << "\n";
+                std::cout.flush();
+ 
+                // Prompt for the next row — including row 9
+                // so the user sees "Row 9/9 :" before typing/pasting
+                if (collected < 81) {
+                    std::cout << "  Row " << (row + 1) << "/9 : ";
+                    std::cout.flush();
+                }
             }
         }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
         try {
             puzzle_   = Grid(board);
             original_ = puzzle_;
             solution_ = puzzle_;
+            solve(solution_);
+            puzzle_loaded_ = true;
+            start_time_    = Clock::now();
         } catch (const std::exception& e) {
-            std::cout << ansi::RED << "Invalid puzzle: " << e.what() << ansi::RESET << "\n";
+            std::cout << ansi::RED
+                      << "\n  ✗ Puzzle error: " << e.what()
+                      << "\n  Check for duplicate clues and try again.\n"
+                      << ansi::RESET;
             return;
         }
-
+ 
+        std::cout << ansi::GREEN << "\n  ✓ Puzzle loaded!\n" << ansi::RESET;
+        std::cout << "\n  Your puzzle:\n";
         print_board(puzzle_);
-        std::cout << "\nSolving...\n";
-        solve(solution_);
-        std::cout << "\nSolution:\n";
+        std::cout << "  Solution:\n";
         print_board(solution_);
     }
 
