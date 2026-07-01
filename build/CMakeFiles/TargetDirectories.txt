@@ -1,5 +1,0 @@
-/workspaces/Sudoku-Engine/build/CMakeFiles/sudoku.dir
-/workspaces/Sudoku-Engine/build/CMakeFiles/testsuite.dir
-/workspaces/Sudoku-Engine/build/CMakeFiles/test.dir
-/workspaces/Sudoku-Engine/build/CMakeFiles/edit_cache.dir
-/workspaces/Sudoku-Engine/build/CMakeFiles/rebuild_cache.dir

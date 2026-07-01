@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/testsuite.dir/tests/test_sudoku_suite.cpp.o -o testsuite 
