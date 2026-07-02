@@ -505,7 +505,7 @@ private:
         auto secs = std::chrono::duration_cast<std::chrono::seconds>(now - start_time_).count();
         int m = static_cast<int>(secs / 60);
         int s = static_cast<int>(secs % 60);
-        char buf[8];
+        char buf[16];
         std::snprintf(buf, sizeof(buf), "%02d:%02d", m, s);
         return buf;
     }
